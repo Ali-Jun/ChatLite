@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Lock, LogIn, Mail } from 'lucide-react';
+import { Eye, EyeOff, Lock, LogIn, Mail, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import AuthCard from '../components/AuthCard.jsx';
 import Button from '../components/Button.jsx';
 import Input from '../components/Input.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { isDemoMode } from '../utils/demo.js';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const demoMode = isDemoMode();
 
   if (isAuthenticated) {
     return <Navigate to="/rooms" replace />;
@@ -23,6 +25,21 @@ const Login = () => {
   const handleChange = (event) => {
     setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
     setError('');
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      setSubmitting(true);
+      await login({ email: 'demo@chatlite.dev', password: 'password123' });
+      toast.success('Demo workspace ready.');
+      navigate('/rooms', { replace: true });
+    } catch (apiError) {
+      const message = apiError.response?.data?.message || 'Could not open demo workspace.';
+      setError(message);
+      toast.error(message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSubmit = async (event) => {
@@ -109,6 +126,19 @@ const Login = () => {
           >
             Login
           </Button>
+
+          {demoMode ? (
+            <Button
+              type="button"
+              fullWidth
+              variant="secondary"
+              icon={<Sparkles className="h-5 w-5" />}
+              onClick={handleDemoLogin}
+              disabled={submitting}
+            >
+              View demo workspace
+            </Button>
+          ) : null}
         </form>
       </AuthCard>
     </main>

@@ -10,6 +10,7 @@ import Loader from '../components/Loader.jsx';
 import RoomCard from '../components/RoomCard.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { createDemoRoom, getDemoRooms, isDemoMode } from '../utils/demo.js';
 
 const Rooms = () => {
   const navigate = useNavigate();
@@ -26,6 +27,12 @@ const Rooms = () => {
     const loadRooms = async () => {
       try {
         setLoading(true);
+
+        if (isDemoMode()) {
+          setRooms(getDemoRooms());
+          return;
+        }
+
         const { data } = await api.get('/rooms');
         setRooms(data);
       } catch (apiError) {
@@ -63,6 +70,15 @@ const Rooms = () => {
 
     try {
       setCreating(true);
+
+      if (isDemoMode()) {
+        const data = createDemoRoom(roomName.trim());
+        setRooms((current) => [data, ...current]);
+        setRoomName('');
+        toast.success('Demo room created.');
+        return;
+      }
+
       const { data } = await api.post('/rooms', { name: roomName });
       setRooms((current) => [data, ...current]);
       setRoomName('');

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../api/axios.js';
+import { demoUser, isDemoMode } from '../utils/demo.js';
 
 const AuthContext = createContext(null);
 const TOKEN_KEY = 'chatlite_token';
@@ -40,6 +41,13 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(
     async (credentials) => {
+      if (isDemoMode()) {
+        const userName = credentials.email?.split('@')[0] || demoUser.name;
+        const user = { ...demoUser, name: userName };
+        saveSession('demo-token', user);
+        return { token: 'demo-token', user };
+      }
+
       const { data } = await api.post('/auth/login', credentials);
       saveSession(data.token, data.user);
       return data;
@@ -49,6 +57,12 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(
     async (formData) => {
+      if (isDemoMode()) {
+        const user = { ...demoUser, name: formData.name || demoUser.name, email: formData.email || demoUser.email };
+        saveSession('demo-token', user);
+        return { token: 'demo-token', user };
+      }
+
       const { data } = await api.post('/auth/register', formData);
       saveSession(data.token, data.user);
       return data;

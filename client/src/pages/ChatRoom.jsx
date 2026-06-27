@@ -10,6 +10,7 @@ import MessageBubble from '../components/MessageBubble.jsx';
 import Sidebar from '../components/Sidebar.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { createSocket } from '../socket.js';
+import { getDemoMessages, getDemoRooms, isDemoMode, saveDemoMessage } from '../utils/demo.js';
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -34,6 +35,11 @@ const ChatRoom = () => {
   useEffect(() => {
     const loadRooms = async () => {
       try {
+        if (isDemoMode()) {
+          setRooms(getDemoRooms());
+          return;
+        }
+
         const { data } = await api.get('/rooms');
         setRooms(data);
       } catch (apiError) {
@@ -54,6 +60,12 @@ const ChatRoom = () => {
       try {
         setError('');
         setLoadingMessages(true);
+
+        if (isDemoMode()) {
+          setMessages(getDemoMessages(roomId));
+          return;
+        }
+
         const { data } = await api.get(`/messages/${roomId}`);
         setMessages(data);
       } catch (apiError) {
@@ -77,6 +89,11 @@ const ChatRoom = () => {
 
   useEffect(() => {
     if (!token || !roomId) return undefined;
+
+    if (isDemoMode()) {
+      setSocketConnected(true);
+      return () => setSocketConnected(false);
+    }
 
     const socket = createSocket(token);
     socketRef.current = socket;
@@ -129,6 +146,15 @@ const ChatRoom = () => {
     const cleanText = messageText.trim();
 
     if (!cleanText || sending) return;
+
+    if (isDemoMode()) {
+      setSending(true);
+      const message = saveDemoMessage(roomId, cleanText, user);
+      setMessages((current) => [...current, message]);
+      setMessageText('');
+      setSending(false);
+      return;
+    }
 
     if (!socketRef.current?.connected) {
       toast.error('Chat connection is not ready yet.');
