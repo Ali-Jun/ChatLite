@@ -176,3 +176,11 @@ Socket.io events:
 ## Resume Description
 
 Built ChatLite, a full-stack real-time chat application with JWT authentication, protected room management, Socket.io messaging, MongoDB message persistence, and a responsive SaaS-style React/Tailwind dashboard UI.
+
+## Live Demo
+
+Portfolio demo: [https://ali-jun.github.io/ChatLite/](https://ali-jun.github.io/ChatLite/)
+
+The live demo runs the React client in static demo mode for portfolio visitors. The full-stack version still runs locally or on a hosted backend with Express, Socket.io, and MongoDB.
+
+![ChatLite dashboard screenshot](portfolio/chatlite-dashboard.png)
